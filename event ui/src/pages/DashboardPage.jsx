@@ -32,6 +32,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import PublishIcon from "@mui/icons-material/Publish";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import TicketTierModal from "../components/TicketTierModal";
 
 const STATUS_COLORS = {
     PUBLISHED: { bg: "#dcfce7", color: "#15803d", label: "Yayında" },
@@ -67,6 +69,7 @@ const DashboardPage = () => {
     const [statusDialog, setStatusDialog] = useState({ open: false, id: null, current: "" });
     const [newStatus, setNewStatus] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
+    const [tierModal, setTierModal] = useState({ open: false, event: null });
 
     const fetchEvents = async () => {
         try {
@@ -266,6 +269,15 @@ const DashboardPage = () => {
                                                             <PublishIcon fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
+                                                    <Tooltip title="Biletleri Yönet">
+                                                        <IconButton
+                                                            size="small"
+                                                            sx={{ color: "#0f3460" }}
+                                                            onClick={() => setTierModal({ open: true, event })}
+                                                        >
+                                                            <ConfirmationNumberIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                     <Tooltip title="Sil">
                                                         <IconButton
                                                             size="small"
@@ -308,6 +320,7 @@ const DashboardPage = () => {
             </Dialog>
 
             {/* Status Dialog */}
+            {/* Status Dialog */}
             <Dialog open={statusDialog.open} onClose={() => setStatusDialog({ open: false, id: null, current: "" })} PaperProps={{ sx: { borderRadius: "16px" } }}>
                 <DialogTitle sx={{ fontWeight: 700 }}>Durum Değiştir</DialogTitle>
                 <DialogContent sx={{ pt: 2 }}>
@@ -334,6 +347,13 @@ const DashboardPage = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Ticket Tier Modal — tüm Dialog'ların dışında, Container kapanmadan önce */}
+            <TicketTierModal
+                open={tierModal.open}
+                onClose={() => setTierModal({ open: false, event: null })}
+                event={tierModal.event}
+            />
         </Box>
     );
 };

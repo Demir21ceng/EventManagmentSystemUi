@@ -20,7 +20,7 @@ export const authService = {
                 id: decoded.sub,
                 role: decoded.role || decoded.roles?.[0] || "",
                 email: decoded.email || "",
-                username: decoded.username || "",
+                userName: decoded.userName || "",
             };
             localStorage.setItem("user", JSON.stringify(user));
             return { token, user };

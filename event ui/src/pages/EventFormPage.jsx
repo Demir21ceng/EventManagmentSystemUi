@@ -25,10 +25,12 @@ const EMPTY_FORM = {
     title: "",
     description: "",
     location: "",
-    startDate: "",
-    endDate: "",
-    capacity: "",
-    eventStatus: "DRAFT",
+    startTime: "",
+    endTime: "",
+    maxCapacity: "",   // ✅ capacity → maxCapacity
+    eventType: "",     // ✅ zorunlu
+    categoryId: "",    // ✅ zorunlu
+    // eventStatus kaldırıldı — backend DTO'sunda yok
 };
 
 const EventFormPage = () => {
@@ -53,14 +55,15 @@ const EventFormPage = () => {
                     title: data.title || "",
                     description: data.description || "",
                     location: data.location || "",
-                    startDate: data.startDate ? data.startDate.substring(0, 16) : "",
-                    endDate: data.endDate ? data.endDate.substring(0, 16) : "",
-                    capacity: data.capacity || "",
-                    eventStatus: data.eventStatus || "DRAFT",
+                    startTime: data.startTime ? data.startTime.substring(0, 16) : "",
+                    endTime: data.endTime ? data.endTime.substring(0, 16) : "",
+                    maxCapacity: data.maxCapacity || "",
+                    eventType: data.eventType || "",
+                    categoryId: data.categoryId || "",
                 });
                 if (data.imageUrl) {
                     setImagePreview(
-                        `${process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:8080"}/images/${data.imageUrl}`
+                        `${process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:9090"}/images/${data.imageUrl}`
                     );
                 }
             } catch {
@@ -89,9 +92,16 @@ const EventFormPage = () => {
         setLoading(true);
 
         try {
+            // Backend EventRequestDto ile birebir eşleşen payload
             const payload = {
-                ...form,
-                capacity: form.capacity ? parseInt(form.capacity) : null,
+                title: form.title,
+                description: form.description,
+                location: form.location,
+                startTime: form.startTime ? form.startTime + ":00" : null,  // "2026-03-01T10:00" → "2026-03-01T10:00:00"
+                endTime: form.endTime ? form.endTime + ":00" : null,
+                maxCapacity: form.maxCapacity ? parseInt(form.maxCapacity) : 0,
+                eventType: form.eventType,
+                categoryId: form.categoryId ? parseInt(form.categoryId) : null,
             };
 
             let savedEvent;
@@ -103,7 +113,6 @@ const EventFormPage = () => {
 
             const eventId = savedEvent?.id || id;
 
-            // Resim yükle
             if (imageFile && eventId) {
                 await eventService.uploadEventImage(eventId, imageFile);
             }
@@ -143,7 +152,9 @@ const EventFormPage = () => {
                         {isEdit ? "Etkinliği Düzenle" : "Yeni Etkinlik Oluştur"}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                        {isEdit ? "Etkinlik bilgilerini güncelleyin." : "Yeni bir etkinlik oluşturmak için formu doldurun."}
+                        {isEdit
+                            ? "Etkinlik bilgilerini güncelleyin."
+                            : "Yeni bir etkinlik oluşturmak için formu doldurun."}
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ mb: 3, borderRadius: "8px" }}>{error}</Alert>}
@@ -151,6 +162,7 @@ const EventFormPage = () => {
 
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={3}>
+
                             {/* Başlık */}
                             <Grid item xs={12}>
                                 <TextField
@@ -167,12 +179,13 @@ const EventFormPage = () => {
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
-                                    label="Açıklama"
+                                    label="Açıklama *"
                                     name="description"
                                     value={form.description}
                                     onChange={handleChange}
                                     multiline
                                     rows={4}
+                                    required
                                 />
                             </Grid>
 
@@ -180,10 +193,11 @@ const EventFormPage = () => {
                             <Grid item xs={12} sm={8}>
                                 <TextField
                                     fullWidth
-                                    label="Konum"
+                                    label="Konum *"
                                     name="location"
                                     value={form.location}
                                     onChange={handleChange}
+                                    required
                                 />
                             </Grid>
 
@@ -191,12 +205,13 @@ const EventFormPage = () => {
                             <Grid item xs={12} sm={4}>
                                 <TextField
                                     fullWidth
-                                    label="Kapasite"
-                                    name="capacity"
+                                    label="Maksimum Kapasite *"
+                                    name="maxCapacity"
                                     type="number"
-                                    value={form.capacity}
+                                    value={form.maxCapacity}
                                     onChange={handleChange}
                                     inputProps={{ min: 1 }}
+                                    required
                                 />
                             </Grid>
 
@@ -204,12 +219,13 @@ const EventFormPage = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="Başlangıç Tarihi"
-                                    name="startDate"
+                                    label="Başlangıç Tarihi *"
+                                    name="startTime"
                                     type="datetime-local"
-                                    value={form.startDate}
+                                    value={form.startTime}
                                     onChange={handleChange}
                                     InputLabelProps={{ shrink: true }}
+                                    required
                                 />
                             </Grid>
 
@@ -217,26 +233,46 @@ const EventFormPage = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="Bitiş Tarihi"
-                                    name="endDate"
+                                    label="Bitiş Tarihi *"
+                                    name="endTime"
                                     type="datetime-local"
-                                    value={form.endDate}
+                                    value={form.endTime}
                                     onChange={handleChange}
                                     InputLabelProps={{ shrink: true }}
+                                    required
                                 />
                             </Grid>
 
-                            {/* Durum */}
+                            {/* Etkinlik Türü */}
                             <Grid item xs={12} sm={6}>
-                                <FormControl fullWidth>
-                                    <InputLabel>Durum</InputLabel>
-                                    <Select name="eventStatus" value={form.eventStatus} onChange={handleChange} label="Durum">
-                                        <MenuItem value="DRAFT">Taslak</MenuItem>
-                                        <MenuItem value="PUBLISHED">Yayınla</MenuItem>
-                                        <MenuItem value="CANCELLED">İptal Et</MenuItem>
-                                        <MenuItem value="COMPLETED">Tamamlandı</MenuItem>
+                                <FormControl fullWidth required>
+                                    <InputLabel>Etkinlik Türü *</InputLabel>
+                                    <Select
+                                        name="eventType"
+                                        value={form.eventType}
+                                        onChange={handleChange}
+                                        label="Etkinlik Türü *"
+                                    >
+                                        <MenuItem value="ONLINE">Online</MenuItem>
+                                        <MenuItem value="PHYSICAL">Yüz Yüze</MenuItem>
+                                        <MenuItem value="HYBRID">Hibrit</MenuItem>
                                     </Select>
                                 </FormControl>
+                            </Grid>
+
+                            {/* Kategori ID */}
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    label="Kategori ID *"
+                                    name="categoryId"
+                                    type="number"
+                                    value={form.categoryId}
+                                    onChange={handleChange}
+                                    inputProps={{ min: 1 }}
+                                    helperText="Kategori numarasını girin"
+                                />
                             </Grid>
 
                             {/* Resim yükleme */}
@@ -284,7 +320,9 @@ const EventFormPage = () => {
                                     fullWidth
                                     variant="contained"
                                     disabled={loading}
-                                    startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+                                    startIcon={
+                                        loading ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />
+                                    }
                                     sx={{
                                         py: 1.5,
                                         background: "#e94560",
@@ -295,9 +333,14 @@ const EventFormPage = () => {
                                         "&:hover": { background: "#c73652" },
                                     }}
                                 >
-                                    {loading ? "Kaydediliyor..." : isEdit ? "Değişiklikleri Kaydet" : "Etkinlik Oluştur"}
+                                    {loading
+                                        ? "Kaydediliyor..."
+                                        : isEdit
+                                            ? "Değişiklikleri Kaydet"
+                                            : "Etkinlik Oluştur"}
                                 </Button>
                             </Grid>
+
                         </Grid>
                     </form>
                 </Paper>

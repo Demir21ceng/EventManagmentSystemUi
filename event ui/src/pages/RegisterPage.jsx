@@ -27,7 +27,7 @@ const RegisterPage = () => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        username: "",
+        userName: "",
         email: "",
         password: "",
         role: "USER",
@@ -95,8 +95,8 @@ const RegisterPage = () => {
                         <TextField
                             fullWidth
                             label="Kullanıcı Adı"
-                            name="username"
-                            value={form.username}
+                            name="userName"
+                            value={form.userName}
                             onChange={handleChange}
                             required
                             sx={{ mb: 2 }}
