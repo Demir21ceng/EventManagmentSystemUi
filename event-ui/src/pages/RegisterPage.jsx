@@ -30,7 +30,7 @@ const RegisterPage = () => {
         userName: "",
         email: "",
         password: "",
-        role: "USER",
+        role: "ATTENDEE",
     });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
@@ -136,8 +136,8 @@ const RegisterPage = () => {
                         <FormControl fullWidth sx={{ mb: 3 }}>
                             <InputLabel>Hesap Türü</InputLabel>
                             <Select name="role" value={form.role} onChange={handleChange} label="Hesap Türü">
-                                <MenuItem value="ATTENDEE">Kullanıcı</MenuItem>
-                                <MenuItem value="ORGANIZER">Organizatör</MenuItem>
+                                <MenuItem value="ATTENDEE">Katılımcı (Etkinliklere bilet al)</MenuItem>
+                                <MenuItem value="ORGANIZER">Organizatör (Etkinlik düzenle)</MenuItem>
                             </Select>
                         </FormControl>
 

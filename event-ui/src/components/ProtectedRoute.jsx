@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Box, CircularProgress } from "@mui/material";
 
-const ProtectedRoute = ({ children, organizerOnly = false }) => {
+const ProtectedRoute = ({ children, organizerOnly = false, adminOnly = false }) => {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -15,6 +15,11 @@ const ProtectedRoute = ({ children, organizerOnly = false }) => {
     }
 
     if (!user) return <Navigate to="/login" replace />;
+
+    if (adminOnly) {
+        const isAdm = user?.role === "ROLE_ADMIN" || user?.role === "ADMIN";
+        if (!isAdm) return <Navigate to="/events" replace />;
+    }
 
     if (organizerOnly) {
         const isOrg = user?.role === "ROLE_ORGANIZER" || user?.role === "ORGANIZER";

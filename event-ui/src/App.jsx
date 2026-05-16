@@ -11,6 +11,10 @@ import EventDetailPage from "./pages/EventDetailPage";
 import EventFormPage from "./pages/EventFormPage";
 import DashboardPage from "./pages/DashboardPage";
 import MyTicketsPage from "./pages/MyTicketsPage";
+import AdminPage from "./pages/AdminPage";
+import TicketInfoPage from "./pages/TicketInfoPage";
+import CheckInPage from "./pages/CheckInPage";
+
 
 const theme = createTheme({
     palette: {
@@ -62,6 +66,7 @@ const AppRoutes = () => (
 
             {/* Dinamik path'ler en sona */}
             <Route path="/events/:id" element={<EventDetailPage />} />
+            <Route path="/ticket-info/:uuid" element={<TicketInfoPage />} />
             <Route
                 path="/events/:id/edit"
                 element={
@@ -86,6 +91,25 @@ const AppRoutes = () => (
                 element={
                     <ProtectedRoute>
                         <MyTicketsPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* ADMIN Paneli */}
+            <Route
+                path="/admin"
+                element={
+                    <ProtectedRoute adminOnly>
+                        <AdminPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/check-in"
+                element={
+                    <ProtectedRoute organizerOnly>
+                        <CheckInPage />
                     </ProtectedRoute>
                 }
             />

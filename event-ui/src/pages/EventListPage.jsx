@@ -37,8 +37,8 @@ const EventListPage = () => {
     // Kategorileri bir kez çek
     useEffect(() => {
         CategoryService.getAllCategories()
-            .then(setCategories)
-            .catch(() => {});
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(() => setCategories([]));
     }, []);
 
     // Etkinlikleri çek — appliedFilters veya page değişince

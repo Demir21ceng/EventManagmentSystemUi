@@ -16,6 +16,7 @@ const STATUS_META = {
     CONFIRMED:  { label: "Onaylandı",    bg: "#dcfce7", color: "#15803d" },
     CANCELLED:  { label: "İptal Edildi", bg: "#fee2e2", color: "#b91c1c" },
     CHECKED_IN: { label: "Giriş Yapıldı", bg: "#e0e7ff", color: "#4338ca" },
+    EXPIRED:    { label: "Süresi Doldu", bg: "#f1f5f9", color: "#475569" },
 };
 
 const MyTicketsPage = () => {
@@ -69,13 +70,14 @@ const MyTicketsPage = () => {
         }
     };
 
-    // Aktif & geçmiş biletleri ayır
-    const active   = registrations.filter((r) => r.status !== "CANCELLED");
+    // Aktif, Geçmiş & İptal biletleri ayır
+    const active    = registrations.filter((r) => r.status !== "CANCELLED" && r.status !== "EXPIRED" && r.eventStatus !== "COMPLETED");
+    const past      = registrations.filter((r) => r.status === "EXPIRED" || r.eventStatus === "COMPLETED");
     const cancelled = registrations.filter((r) => r.status === "CANCELLED");
 
     const TicketCard = ({ reg }) => {
         const meta = STATUS_META[reg.status] || { label: reg.status, bg: "#f3f4f6", color: "#6b7280" };
-        const isCancellable = reg.status === "CONFIRMED";
+        const isCancellable = reg.status === "CONFIRMED" && reg.eventStatus !== "COMPLETED";
 
         return (
             <Paper
@@ -148,21 +150,27 @@ const MyTicketsPage = () => {
                             flexShrink: 0,
                         }}
                     >
-                        <img
-                            src={`${(import.meta.env.VITE_API_URL || "http://localhost:9090/api").replace("/api", "")}/qrcodes/${reg.qrCodeUuid}.png`}
-                            alt="QR Kod"
-                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                            onError={(e) => {
-                                // QR henüz oluşturulmamışsa placeholder
-                                e.target.style.display = "none";
-                                e.target.nextSibling.style.display = "flex";
-                            }}
-                        />
-                        {/* Fallback — QR dosyası yoksa */}
-                        <Box sx={{ display: "none", flexDirection: "column", alignItems: "center", color: "#94a3b8" }}>
+                        {(reg.status !== "EXPIRED" && reg.eventStatus !== "COMPLETED") ? (
+                            <img
+                                src={`${(import.meta.env.VITE_API_URL || "http://localhost:9090/api").replace("/api", "")}/qrcodes/${reg.qrCodeUuid}.png`}
+                                alt="QR Kod"
+                                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.nextSibling.style.display = "flex";
+                                }}
+                            />
+                        ) : null}
+                        {/* Fallback — QR dosyası yoksa veya süresi dolduysa */}
+                        <Box sx={{ 
+                            display: (reg.status === "EXPIRED" || reg.eventStatus === "COMPLETED") ? "flex" : "none", 
+                            flexDirection: "column", 
+                            alignItems: "center", 
+                            color: "#94a3b8" 
+                        }}>
                             <QrCode2Icon sx={{ fontSize: 32 }} />
                             <Typography variant="caption" sx={{ fontSize: "0.6rem", textAlign: "center" }}>
-                                Hazırlanıyor
+                                {(reg.status === "EXPIRED" || reg.eventStatus === "COMPLETED") ? "Süresi Doldu" : "Hazırlanıyor"}
                             </Typography>
                         </Box>
                     </Box>
@@ -282,6 +290,16 @@ const MyTicketsPage = () => {
                                             AKTİF BİLETLER ({active.length})
                                         </Typography>
                                         {active.map((r) => <TicketCard key={r.id} reg={r} />)}
+                                    </>
+                                )}
+
+                                {/* Geçmiş biletler */}
+                                {past.length > 0 && (
+                                    <>
+                                        <Typography variant="subtitle1" fontWeight={700} mt={4} mb={2} color="text.secondary">
+                                            GEÇMİŞ BİLETLER ({past.length})
+                                        </Typography>
+                                        {past.map((r) => <TicketCard key={r.id} reg={r} />)}
                                     </>
                                 )}
 
